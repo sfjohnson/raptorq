@@ -124,7 +124,7 @@ pub struct SourceBlockDecoder {
     repair_packets: Vec<EncodingPacket>,
     received_source_symbols: u32,
     received_esi: HashSet<u32>,
-    decoded: bool,
+    pub decoded: bool,
     sparse_threshold: u32,
 }
 
@@ -162,6 +162,48 @@ impl SourceBlockDecoder {
             decoded: false,
             sparse_threshold: SPARSE_MATRIX_THRESHOLD,
         }
+    }
+
+    pub fn new_blank() -> SourceBlockDecoder {
+      SourceBlockDecoder {
+        source_block_id: 0,
+        symbol_size: 0,
+        num_sub_blocks: 0,
+        symbol_alignment: 0,
+        source_block_symbols: 0,
+        source_symbols: vec![],
+        repair_packets: vec![],
+        received_source_symbols: 0,
+        received_esi: HashSet::new(),
+        decoded: true,
+        sparse_threshold: 0
+      }
+    }
+
+    pub fn reset(
+      &mut self,
+      source_block_id: u8,
+      config: &ObjectTransmissionInformation,
+      block_length: u64,
+    ) {
+        let source_symbols = (block_length as f64 / config.symbol_size() as f64).ceil() as u32;
+        self.received_esi.clear();
+        for i in source_symbols..extended_source_block_symbols(source_symbols) {
+          self.received_esi.insert(i);
+        }
+        self.source_symbols.clear();
+        for _ in 0..source_symbols {
+          self.source_symbols.push(None);
+        }
+        self.repair_packets.clear();
+        self.source_block_id = source_block_id;
+        self.symbol_size = config.symbol_size();
+        self.num_sub_blocks = config.sub_blocks();
+        self.symbol_alignment = config.symbol_alignment();
+        self.source_block_symbols = source_symbols;
+        self.received_source_symbols = 0;
+        self.decoded = false;
+        self.sparse_threshold = SPARSE_MATRIX_THRESHOLD;
     }
 
     #[cfg(any(test, feature = "benchmarking"))]

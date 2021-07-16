@@ -3,6 +3,9 @@
 #![cfg_attr(feature = "use_neon", feature(aarch64_target_feature))]
 #![cfg_attr(feature = "use_neon", feature(arm_target_feature))]
 
+#[macro_use]
+extern crate lazy_static;
+
 mod arraymap;
 mod base;
 mod constraint_matrix;
@@ -17,6 +20,7 @@ mod octet_matrix;
 mod octets;
 mod operation_vector;
 mod pi_solver;
+mod cwrap;
 #[cfg(feature = "python")]
 mod python;
 mod rng;
