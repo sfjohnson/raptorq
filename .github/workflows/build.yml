@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-10.15
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -21,11 +21,16 @@ jobs:
           toolchain: stable
           override: true
 
+      - name: Configure Rust for Android
+        run: |
+          cp cargo-config.toml ~/.cargo/config
+          rustup target add aarch64-linux-android
+
       - name: Build
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --release
+          args: --target aarch64-linux-android --release
 
       - name: Create release
         uses: softprops/action-gh-release@v1
