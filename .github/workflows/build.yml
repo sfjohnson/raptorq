@@ -6,7 +6,39 @@ on:
       - 'v*'
 
 jobs:
-  build:
+  build-macos:
+    runs-on: macos-10.15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+
+      - name: Rename build output
+        run: mv target/release/libraptorq.a ./libraptorq-macos10.a
+
+      - name: Upload build output
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-output-macos10
+          path: |
+            libraptorq-macos10.a
+            LICENSE
+
+  build-android:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
@@ -32,9 +64,35 @@ jobs:
           command: build
           args: --target aarch64-linux-android --release
 
+      - name: Rename build output
+        run: mv target/aarch64-linux-android/release/libraptorq.a ./libraptorq-android30.a
+
+      - name: Upload build output
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-output-android30
+          path: libraptorq-android30.a
+
+  create-release:
+    runs-on: ubuntu-20.04
+    needs: [build-macos, build-android]
+    steps:
+      - name: Get build output macos10
+        uses: actions/download-artifact@v2
+        with:
+          name: build-output-macos10
+
+      - name: Get build output android30
+        uses: actions/download-artifact@v2
+        with:
+          name: build-output-android30
+
       - name: Create release
         uses: softprops/action-gh-release@v1
         with:
-          files: target/release/libraptorq.a
+          files: |
+            libraptorq-macos10.a
+            libraptorq-android30.a
+            LICENSE
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
