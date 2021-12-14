@@ -27,14 +27,19 @@ jobs:
           command: build
           args: --release
 
-      - name: Rename build output
-        run: mv target/release/libraptorq.a ./libraptorq-macos10.a
+      - name: Prepare output
+        run: |
+          pushd include
+          zip -r ../include.zip .
+          popd
+          mv target/release/libraptorq.a ./libraptorq-macos10.a
 
       - name: Upload build output
         uses: actions/upload-artifact@v2
         with:
           name: build-output-macos10
           path: |
+            include.zip
             libraptorq-macos10.a
             LICENSE
 
@@ -91,6 +96,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
+            include.zip
             libraptorq-macos10.a
             libraptorq-android30.a
             LICENSE
