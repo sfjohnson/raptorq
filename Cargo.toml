@@ -2,12 +2,12 @@
 name = "raptorq"
 description = "RaptorQ (RFC6330)"
 license = "Apache-2.0"
-homepage = "https://github.com/cberner/raptorq"
-repository = "https://github.com/cberner/raptorq"
+homepage = "https://github.com/sfjohnson/raptorq"
+repository = "https://github.com/sfjohnson/raptorq"
 readme = "README.md"
-version = "1.6.3"
+version = "1.7.4"
 edition = "2018"
-authors = ["Christopher Berner <christopherberner@gmail.com>"]
+authors = ["Christopher Berner <christopherberner@gmail.com>", "Iroha <sam@iroha.is>"]
 
 [lib]
 crate-type = ["staticlib"]
