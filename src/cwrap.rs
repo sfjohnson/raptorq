@@ -41,22 +41,20 @@ pub unsafe extern "C" fn raptorq_decodePacket(packet_buf: *const u8, packet_buf_
   let block_number = packet.payload_id.source_block_number();
   let mut decoders = DECODERS_MUTEX.lock().unwrap();
 
-  // DEBUG: why 5?
-  let mut block_number_ahead = (block_number as usize) + 5;
-  if block_number_ahead >= 256 {
-    block_number_ahead -= 256;
-  }
+  // The erase head (block_number_ahead) is put the maximum distance away from the write head (block_number).
+  let block_number_ahead = ((block_number as usize) + 128) % 256;
 
   // DEBUG: breaks unless packet_buf_len is constant for every packet
   let out_symbol_len = packet_buf_len - 4;
   let out_buf_len = (out_symbol_len * out_symbol_count) as u64;
   let config = ObjectTransmissionInformation::with_defaults(out_buf_len, out_symbol_len as u16);
   decoders[block_number_ahead as usize].reset(block_number_ahead as u8, &config, out_buf_len);
-  if decoders[block_number as usize].decoded {
-    decoders[block_number as usize].reset(block_number, &config, out_buf_len);
-  }
 
-  let result = decoders[block_number as usize].decode(iter::once(packet));
+  let result = if decoders[block_number as usize].decoded {
+    None
+  } else {
+    decoders[block_number as usize].decode(iter::once(packet))
+  };
 
   match result {
     Some(out_vec) => {
