@@ -42,7 +42,7 @@ harness = false
 
 [profile.release]
 debug = false
-lto = false
+lto = true
 
 [features]
 benchmarking = []
