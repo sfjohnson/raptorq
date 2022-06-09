@@ -43,6 +43,7 @@ harness = false
 [profile.release]
 debug = false
 lto = true
+panic = "abort"
 
 [features]
 benchmarking = []
