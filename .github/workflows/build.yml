@@ -14,11 +14,12 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Install nightly toolchain
+      - name: Install beta toolchain
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: nightly
+          toolchain: beta
+          override: true
 
       - name: Build
         uses: actions-rs/cargo@v1

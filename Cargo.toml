@@ -40,10 +40,6 @@ harness = false
 name = "decode_benchmark"
 harness = false
 
-[profile.release]
-debug = false
-lto = true
-
 [features]
 benchmarking = []
 use_neon = []
