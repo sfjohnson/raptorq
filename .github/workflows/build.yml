@@ -60,6 +60,7 @@ jobs:
 
       - name: Configure Rust for Android
         run: |
+          ln -sf $ANDROID_NDK_ROOT $ANDROID_SDK_ROOT/ndk-bundle
           cp cargo-config.toml ~/.cargo/config
           rustup target add aarch64-linux-android
 
