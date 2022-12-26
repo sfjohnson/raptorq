@@ -10,7 +10,7 @@ jobs:
     runs-on: macos-10.15
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           persist-credentials: false
 
@@ -43,11 +43,41 @@ jobs:
             libraptorq-macos10.a
             LICENSE
 
+  build-macos-arm64:
+    runs-on: [self-hosted, macOS, ARM64]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+
+      - name: Install beta toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: beta
+          override: true
+
+      - name: Build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+
+      - name: Prepare output
+        run: mv target/release/libraptorq.a ./libraptorq-macos-arm64.a
+
+      - name: Upload build output
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-output-macos-arm64
+          path: libraptorq-macos-arm64.a
+
   build-android:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           persist-credentials: false
 
@@ -88,6 +118,11 @@ jobs:
         with:
           name: build-output-macos10
 
+      - name: Get build output macos-arm64
+        uses: actions/download-artifact@v2
+        with:
+          name: build-output-macos-arm64
+
       - name: Get build output android30
         uses: actions/download-artifact@v2
         with:
@@ -99,6 +134,7 @@ jobs:
           files: |
             include.zip
             libraptorq-macos10.a
+            libraptorq-macos-arm64.a
             libraptorq-android30.a
             LICENSE
         env:
