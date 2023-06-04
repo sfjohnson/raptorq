@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-macos:
-    runs-on: macos-10.15
+    runs-on: macos-11
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -32,15 +32,15 @@ jobs:
           pushd include
           zip -r ../include.zip .
           popd
-          mv target/release/libraptorq.a ./libraptorq-macos10.a
+          mv target/release/libraptorq.a ./libraptorq-macos11.a
 
       - name: Upload build output
         uses: actions/upload-artifact@v2
         with:
-          name: build-output-macos10
+          name: build-output-macos11
           path: |
             include.zip
-            libraptorq-macos10.a
+            libraptorq-macos11.a
             LICENSE
 
   build-macos-arm64:
@@ -113,10 +113,10 @@ jobs:
     runs-on: ubuntu-20.04
     needs: [build-macos, build-macos-arm64, build-android]
     steps:
-      - name: Get build output macos10
+      - name: Get build output macos11
         uses: actions/download-artifact@v2
         with:
-          name: build-output-macos10
+          name: build-output-macos11
 
       - name: Get build output macos-arm64
         uses: actions/download-artifact@v2
@@ -133,7 +133,7 @@ jobs:
         with:
           files: |
             include.zip
-            libraptorq-macos10.a
+            libraptorq-macos11.a
             libraptorq-macos-arm64.a
             libraptorq-android30.a
             LICENSE
