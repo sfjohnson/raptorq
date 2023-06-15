@@ -6,17 +6,26 @@ use crate::base::{EncodingPacket, ObjectTransmissionInformation};
 use crate::decoder::{SourceBlockDecoder};
 use crate::encoder::{SourceBlockEncoder, SourceBlockEncodingPlan};
 
-#[no_mangle]
-pub unsafe extern "C" fn raptorq_encodeBlock(sbn: u8, block_buf: *const u8, block_buf_len: size_t, in_symbol_count: size_t, out_buf: *mut u8, out_packet_count: size_t) -> size_t {
-  let in_slice = slice::from_raw_parts(block_buf, block_buf_len);
+static mut BLOCK_BUF_LEN: Option<size_t> = None;
+static mut IN_SYMBOL_COUNT: Option<size_t> = None;
+static mut CONFIG: Option<ObjectTransmissionInformation> = None;
+static mut PLAN: Option<SourceBlockEncodingPlan> = None;
 
-  let in_symbol_len = block_buf_len / in_symbol_count;
-  let config = ObjectTransmissionInformation::with_defaults(block_buf_len as u64, in_symbol_len as u16);
-  let plan = SourceBlockEncodingPlan::generate(in_symbol_count as u16);
-  let encoder = SourceBlockEncoder::with_encoding_plan2(sbn, &config, in_slice, &plan);
+#[no_mangle]
+pub unsafe extern "C" fn raptorq_initEncoder(block_buf_len: size_t, in_symbol_count: size_t) {
+  BLOCK_BUF_LEN = Some(block_buf_len);
+  IN_SYMBOL_COUNT = Some(in_symbol_count);
+  CONFIG = Some(ObjectTransmissionInformation::with_defaults(block_buf_len as u64, (block_buf_len / in_symbol_count) as u16));
+  PLAN = Some(SourceBlockEncodingPlan::generate(in_symbol_count as u16));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn raptorq_encodeBlock(sbn: u8, block_buf: *const u8, out_buf: *mut u8, out_packet_count: size_t) -> size_t {
+  let in_slice = slice::from_raw_parts(block_buf, BLOCK_BUF_LEN.unwrap());
+  let encoder = SourceBlockEncoder::with_encoding_plan2(sbn, CONFIG.as_mut().unwrap(), in_slice, PLAN.as_mut().unwrap());
 
   let mut encoded_packets = vec![];
-  let repair_packets_count = (out_packet_count - in_symbol_count) as u32;
+  let repair_packets_count = (out_packet_count - IN_SYMBOL_COUNT.unwrap()) as u32;
   encoded_packets.extend(encoder.source_packets());
   encoded_packets.extend(encoder.repair_packets(0, repair_packets_count));
   let out_vec: Vec<u8> = encoded_packets
@@ -44,7 +53,7 @@ pub unsafe extern "C" fn raptorq_decodePacket(packet_buf: *const u8, packet_buf_
   // The erase head (block_number_ahead) is put the maximum distance away from the write head (block_number).
   let block_number_ahead = ((block_number as usize) + 128) % 256;
 
-  // DEBUG: breaks unless packet_buf_len is constant for every packet
+  // NOTE: breaks unless packet_buf_len is constant for every packet
   let out_symbol_len = packet_buf_len - 4;
   let out_buf_len = (out_symbol_len * out_symbol_count) as u64;
   let config = ObjectTransmissionInformation::with_defaults(out_buf_len, out_symbol_len as u16);
