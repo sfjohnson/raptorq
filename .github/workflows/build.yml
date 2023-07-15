@@ -73,45 +73,60 @@ jobs:
           name: build-output-macos-arm64
           path: libraptorq-macos-arm64.a
 
-  build-android:
-    runs-on: ubuntu-20.04
+  build-android-and-rpi:
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           persist-credentials: false
 
-      - name: Install beta toolchain
+      - name: Get RPi toolchain
+        run: |
+          wget https://github.com/sfjohnson/rpi-toolchain/releases/download/v0.0.6/arm-rpi-linux-gnueabihf.tar.xz
+          tar xf arm-rpi-linux-gnueabihf.tar.xz -C ~
+
+      - name: Install beta Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: beta
           override: true
 
-      - name: Configure Rust for Android
+      - name: Configure Rust for Android and RPi
         run: |
           ln -sf $ANDROID_NDK_ROOT $ANDROID_SDK_ROOT/ndk-bundle
           cp cargo-config.toml ~/.cargo/config
-          rustup target add aarch64-linux-android
+          rustup target add aarch64-linux-android arm-unknown-linux-gnueabihf
 
-      - name: Build
+      - name: Build Android
         uses: actions-rs/cargo@v1
         with:
           command: build
           args: --target aarch64-linux-android --release
 
+      - name: Build RPi
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --target arm-unknown-linux-gnueabihf --release
+
       - name: Rename build output
-        run: mv target/aarch64-linux-android/release/libraptorq.a ./libraptorq-android30.a
+        run: |
+          mv target/aarch64-linux-android/release/libraptorq.a ./libraptorq-android30.a
+          mv target/arm-unknown-linux-gnueabihf/release/libraptorq.a ./libraptorq-rpi.a
 
       - name: Upload build output
         uses: actions/upload-artifact@v2
         with:
-          name: build-output-android30
-          path: libraptorq-android30.a
+          name: build-output-android30-and-rpi
+          path: |
+            libraptorq-android30.a
+            libraptorq-rpi.a
 
   create-release:
-    runs-on: ubuntu-20.04
-    needs: [build-macos, build-macos-arm64, build-android]
+    runs-on: ubuntu-22.04
+    needs: [build-macos, build-macos-arm64, build-android-and-rpi]
     steps:
       - name: Get build output macos11
         uses: actions/download-artifact@v2
@@ -123,10 +138,10 @@ jobs:
         with:
           name: build-output-macos-arm64
 
-      - name: Get build output android30
+      - name: Get build output android30 and rpi
         uses: actions/download-artifact@v2
         with:
-          name: build-output-android30
+          name: build-output-android30-and-rpi
 
       - name: Create release
         uses: softprops/action-gh-release@v1
@@ -136,6 +151,7 @@ jobs:
             libraptorq-macos11.a
             libraptorq-macos-arm64.a
             libraptorq-android30.a
+            libraptorq-rpi.a
             LICENSE
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
