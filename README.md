@@ -6,14 +6,14 @@
 [![License](https://img.shields.io/crates/l/raptorq)](https://crates.io/crates/raptorq)
 [![dependency status](https://deps.rs/repo/github/cberner/raptorq/status.svg)](https://deps.rs/repo/github/cberner/raptorq)
 
+### Overview
+
 Rust implementation of RaptorQ (RFC6330)
 
 Recovery properties:
 Reconstruction probability after receiving K + h packets = 1 - 1/256^(h + 1). Where K is the number of packets in the
 original message, and h is the number of additional packets received.
 See "RaptorQ Technical Overview" by Qualcomm
-
-This crate requires Rust 1.46 or newer.
 
 ### Examples
 See the `examples/` directory for usage.

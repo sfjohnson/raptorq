@@ -5,9 +5,8 @@ license = "Apache-2.0"
 homepage = "https://github.com/sfjohnson/raptorq"
 repository = "https://github.com/sfjohnson/raptorq"
 readme = "README.md"
-version = "1.7.11"
+version = "1.8.2"
 edition = "2021"
-rust-version = "1.60"
 authors = ["Christopher Berner <christopherberner@gmail.com>", "Iroha <sam@iroha.is>"]
 
 [lib]
@@ -15,9 +14,7 @@ crate-type = ["staticlib"]
 
 [dependencies]
 serde = {version = "1.0.102", features=["std", "derive"], optional = true}
-pyo3 = {version = "0.16", features=["extension-module", "abi3-py37"], optional = true }
-wasm-bindgen = {version = "0.2", optional = true}
-js-sys = {version = "0.3.60", optional = true}
+pyo3 = {version = "0.20", features=["extension-module", "abi3-py37"], optional = true }
 libc = "0.2.97"
 lazy_static = "1.4.0"
 
@@ -30,10 +27,12 @@ threadpool = "1.7"
 [[bench]]
 name = "codec_benchmark"
 harness = false
+required-features = ["benchmarking"]
 
 [[bench]]
 name = "matrix_sparsity"
 harness = false
+required-features = ["benchmarking"]
 
 [[bench]]
 name = "encode_benchmark"
@@ -43,17 +42,14 @@ harness = false
 name = "decode_benchmark"
 harness = false
 
-[features]
-benchmarking = []
-python = ["pyo3"]
-serde_support = ["serde"]
-wasm = ["wasm-bindgen", "js-sys"]
+[[example]]
+name = "main"
+required-features = ["std"]
 
-[package.metadata.maturin]
-requires-python = ">= 3.7"
-classifier = ["Development Status :: 4 - Beta",
-              "License :: OSI Approved :: Apache Software License",
-              "Programming Language :: Python",
-              "Programming Language :: Python :: 3",
-              "Programming Language :: Python :: 3 :: Only",
-              "Programming Language :: Rust"]
+[features]
+default = ["std"]
+
+benchmarking = ["std"]
+python = ["pyo3", "std"]
+serde_support = ["serde", "std"]
+std = []
