@@ -134,7 +134,7 @@ jobs:
 
   create-release:
     runs-on: ubuntu-22.04
-    needs: [build-macos, build-macos-arm64, build-android-and-rpi]
+    needs: [build-macos, build-macos-arm64, build-linux]
     steps:
       - name: Get build output macos11
         uses: actions/download-artifact@v2
