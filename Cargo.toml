@@ -5,7 +5,7 @@ license = "Apache-2.0"
 homepage = "https://github.com/sfjohnson/raptorq"
 repository = "https://github.com/sfjohnson/raptorq"
 readme = "README.md"
-version = "1.8.2"
+version = "1.9.0"
 edition = "2021"
 authors = ["Christopher Berner <christopherberner@gmail.com>", "Iroha <sam@iroha.is>"]
 
@@ -16,7 +16,6 @@ crate-type = ["staticlib"]
 serde = {version = "1.0.102", features=["std", "derive"], optional = true}
 pyo3 = {version = "0.20", features=["extension-module", "abi3-py37"], optional = true }
 libc = "0.2.97"
-lazy_static = "1.4.0"
 
 [dev-dependencies]
 criterion = "0.3"

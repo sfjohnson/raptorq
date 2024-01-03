@@ -12,9 +12,6 @@ extern crate core;
 #[macro_use]
 extern crate std;
 
-#[macro_use]
-extern crate lazy_static;
-
 mod arraymap;
 mod base;
 mod constraint_matrix;
