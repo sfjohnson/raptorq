@@ -40,12 +40,15 @@ pub unsafe extern "C" fn raptorq_initEncoder(block_buf_len: size_t, in_symbol_co
 pub unsafe extern "C" fn raptorq_initDecoder(packet_buf_len: size_t, out_symbol_count: size_t) -> *mut RaptorqDecodeHandle {
   let out_symbol_len = packet_buf_len - 4;
   let out_buf_len = (out_symbol_len * out_symbol_count) as u64;
+  let config = ObjectTransmissionInformation::with_defaults(out_buf_len, out_symbol_len as u16);
 
   let handle = RaptorqDecodeHandle {
     packet_buf_len,
     out_buf_len,
-    config: ObjectTransmissionInformation::with_defaults(out_buf_len, out_symbol_len as u16),
-    decoders: (0..256).map(|_| { SourceBlockDecoder::new_blank() }).collect()
+    config,
+    decoders: (0..=255).map(|block_number| {
+      SourceBlockDecoder::new2(block_number, &config, out_buf_len)
+    }).collect()
   };
 
   Box::into_raw(Box::new(handle))
@@ -56,6 +59,7 @@ pub unsafe extern "C" fn raptorq_deinitEncoder(handle: *mut RaptorqEncodeHandle)
   drop(Box::from_raw(handle));
 }
 
+// DEBUG: this causes a segfault
 #[no_mangle]
 pub unsafe extern "C" fn raptorq_deinitDecoder(handle: *mut RaptorqDecodeHandle) {
   drop(Box::from_raw(handle));

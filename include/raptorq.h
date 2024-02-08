@@ -1,6 +1,10 @@
 #ifndef _RAPTORQ_H
 #define _RAPTORQ_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -18,5 +22,9 @@ void raptorq_deinitEncoder (void *handle);
 void raptorq_deinitDecoder (void *handle);
 size_t raptorq_encodeBlock (const void *handle, uint8_t sbn, const uint8_t *blockBuf, uint8_t *outBuf, size_t outPacketCount);
 size_t raptorq_decodePacket (void *handle, const uint8_t *packetBuf, uint8_t *outBuf);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
