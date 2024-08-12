@@ -73,7 +73,7 @@ pub unsafe extern "C" fn raptorq_deinitDecoder(handle: *mut RaptorqDecodeHandle)
 pub unsafe extern "C" fn raptorq_encodeBlock(handle: *const RaptorqEncodeHandle, sbn: u8, block_buf: *const u8, out_buf: *mut u8, out_packet_count: size_t) -> size_t {
   let handle_ref: &RaptorqEncodeHandle = &*handle;
   let in_slice = slice::from_raw_parts(block_buf, handle_ref.block_buf_len);
-  let encoder = SourceBlockEncoder::with_encoding_plan2(sbn, &handle_ref.config, in_slice, &handle_ref.plan);
+  let encoder = SourceBlockEncoder::with_encoding_plan(sbn, &handle_ref.config, in_slice, &handle_ref.plan);
 
   let mut encoded_packets = vec![];
   let repair_packets_count = (out_packet_count - handle_ref.in_symbol_count) as u32;
