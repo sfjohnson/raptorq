@@ -126,7 +126,7 @@ impl Encoder {
                 let plan = SourceBlockEncodingPlan::generate(symbol_count as u16);
                 cached_plan = Some(plan);
             }
-            block_encoders.push(SourceBlockEncoder::with_encoding_plan2(
+            block_encoders.push(SourceBlockEncoder::with_encoding_plan(
                 i as u8,
                 &config,
                 block,
@@ -197,15 +197,6 @@ pub struct SourceBlockEncoder {
 }
 
 impl SourceBlockEncoder {
-    #[deprecated(
-        since = "1.3.0",
-        note = "Use the new2() function instead. In version 2.0, that function will replace this one"
-    )]
-    pub fn new(source_block_id: u8, symbol_size: u16, data: &[u8]) -> SourceBlockEncoder {
-        let config = ObjectTransmissionInformation::new(0, symbol_size, 0, 1, 1);
-        SourceBlockEncoder::new2(source_block_id, &config, data)
-    }
-
     fn create_symbols(config: &ObjectTransmissionInformation, data: &[u8]) -> Vec<Symbol> {
         assert_eq!(data.len() % config.symbol_size() as usize, 0);
         if config.sub_blocks() > 1 {
@@ -237,8 +228,7 @@ impl SourceBlockEncoder {
         }
     }
 
-    // TODO: rename this to new() in version 2.0
-    pub fn new2(
+    pub fn new(
         source_block_id: u8,
         config: &ObjectTransmissionInformation,
         data: &[u8],
@@ -258,22 +248,7 @@ impl SourceBlockEncoder {
         }
     }
 
-    #[deprecated(
-        since = "1.3.0",
-        note = "Use the with_encoding_plan2() function instead. In version 2.0, that function will replace this one"
-    )]
     pub fn with_encoding_plan(
-        source_block_id: u8,
-        symbol_size: u16,
-        data: &[u8],
-        plan: &SourceBlockEncodingPlan,
-    ) -> SourceBlockEncoder {
-        let config = ObjectTransmissionInformation::new(0, symbol_size, 0, 1, 1);
-        SourceBlockEncoder::with_encoding_plan2(source_block_id, &config, data, plan)
-    }
-
-    // TODO: rename this to with_encoding_plan() in version 2.0
-    pub fn with_encoding_plan2(
         source_block_id: u8,
         config: &ObjectTransmissionInformation,
         data: &[u8],
@@ -321,7 +296,10 @@ impl SourceBlockEncoder {
         for i in 0..packets {
             let tuple = intermediate_tuple(start_encoding_symbol_id + i, lt_symbols, sys_index, p1);
             result.push(EncodingPacket::new(
-                PayloadId::new(self.source_block_id, start_encoding_symbol_id + i),
+                PayloadId::new(
+                    self.source_block_id,
+                    self.source_symbols.len() as u32 + start_repair_symbol_id + i,
+                ),
                 enc(
                     self.source_symbols.len() as u32,
                     &self.intermediate_symbols,
@@ -443,15 +421,16 @@ mod tests {
     use rand::Rng;
     use std::vec::Vec;
 
+    use super::*;
+
     use crate::base::intermediate_tuple;
-    use crate::encoder::enc;
-    use crate::encoder::gen_intermediate_symbols;
     use crate::symbol::Symbol;
     use crate::systematic_constants::num_lt_symbols;
     use crate::systematic_constants::num_pi_symbols;
     use crate::systematic_constants::{
         calculate_p1, num_ldpc_symbols, systematic_index, MAX_SOURCE_SYMBOLS_PER_BLOCK,
     };
+    use crate::PayloadId;
     #[cfg(not(feature = "python"))]
     use crate::{Encoder, EncoderBuilder, EncodingPacket, ObjectTransmissionInformation};
     #[cfg(not(feature = "python"))]
@@ -553,6 +532,33 @@ mod tests {
         for i in 0..S {
             assert_eq!(Symbol::zero(SYMBOL_SIZE), D[i]);
         }
+    }
+
+    #[test]
+    fn encoding_creates_expected_packets() {
+        let symbol_size = 2;
+        let data: [u8; 6] = [0, 1, 2, 3, 4, 5];
+        let encoder = SourceBlockEncoder::new(
+            0,
+            &ObjectTransmissionInformation::new(0, symbol_size, 1, 1, 1),
+            &data,
+        );
+        assert_eq!(
+            encoder.source_packets(),
+            [[0, 1], [2, 3], [4, 5]]
+                .into_iter()
+                .enumerate()
+                .map(|(i, d)| EncodingPacket::new(PayloadId::new(0, i as u32), d.into()))
+                .collect::<Vec<_>>()
+        );
+        assert_eq!(
+            encoder
+                .repair_packets(2, 4)
+                .into_iter()
+                .map(|p| p.payload_id.encoding_symbol_id())
+                .collect::<Vec<_>>(),
+            &[5, 6, 7, 8]
+        );
     }
 
     #[cfg(not(feature = "python"))]

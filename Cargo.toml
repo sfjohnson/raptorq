@@ -5,7 +5,7 @@ license = "Apache-2.0"
 homepage = "https://github.com/sfjohnson/raptorq"
 repository = "https://github.com/sfjohnson/raptorq"
 readme = "README.md"
-version = "1.9.1"
+version = "2.0.0"
 edition = "2021"
 authors = ["Christopher Berner <christopherberner@gmail.com>", "Iroha <sam@iroha.is>"]
 
