@@ -47,7 +47,7 @@ pub unsafe extern "C" fn raptorq_initDecoder(packet_buf_len: size_t, out_symbol_
     out_buf_len,
     config,
     decoders: (0..=255).map(|block_number| {
-      SourceBlockDecoder::new2(block_number, &config, out_buf_len)
+      SourceBlockDecoder::new(block_number, &config, out_buf_len)
     }).collect()
   };
 
