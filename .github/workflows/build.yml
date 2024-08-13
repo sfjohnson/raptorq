@@ -102,15 +102,15 @@ jobs:
           cd extracted1
           $TARGET_AR -x ../target/aarch64-unknown-linux-gnu/release/libraptorq.a
           $TARGET_OBJCOPY --redefine-sym=_rust_eh_personality=_rust_canadian_personality $(find . -name 'raptorq-*')
-          ar cqT libraptorq.a $(find . -name '*.o' | tr '\n' ' ')
-          echo -e 'create libraptorq.a\naddlib libraptorq.a\nsave\nend' | ar -M
+          $TARGET_AR cqT libraptorq.a $(find . -name '*.o' | tr '\n' ' ')
+          echo 'create libraptorq.a\naddlib libraptorq.a\nsave\nend' | $TARGET_AR -M
           mv libraptorq.a ../libraptorq-rpi-arm64.a
           mkdir ../extracted2
           cd ../extracted2
           ar -x ../target/release/libraptorq.a
           objcopy --redefine-sym=_rust_eh_personality=_rust_canadian_personality $(find . -name 'raptorq-*')
           ar cqT libraptorq.a $(find . -name '*.o' | tr '\n' ' ')
-          echo -e 'create libraptorq.a\naddlib libraptorq.a\nsave\nend' | ar -M
+          echo 'create libraptorq.a\naddlib libraptorq.a\nsave\nend' | ar -M
           mv libraptorq.a ../libraptorq-linux-x64.a
         env:
           TARGET_AR: /home/runner/aarch64-rpi4-linux-gnu/bin/aarch64-rpi4-linux-gnu-ar
