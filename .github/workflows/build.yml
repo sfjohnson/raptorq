@@ -48,8 +48,13 @@ jobs:
           rustup default beta
           cargo build --release
 
-      - name: Prepare output
-        run: mv target/release/libraptorq.a ./libraptorq-macos-arm64.a
+      - name: Hack to fix duplicate symbol (badness 10000)
+        run: |
+          mkdir extracted
+          cd extracted
+          ar -x ../target/release/libraptorq.a
+          $(brew --prefix llvm@15)/bin/llvm-objcopy --redefine-sym=_rust_eh_personality=_rust_canadian_personality $(find . -name 'raptorq-*')
+          libtool -static -o ../libraptorq-macos-arm64.a *.o
 
       - name: Upload build output
         uses: actions/upload-artifact@v4
