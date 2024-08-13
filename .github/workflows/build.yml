@@ -19,12 +19,18 @@ jobs:
           rustup default beta
           cargo build --release
 
+      - name: Hack to fix duplicate symbol (badness 10000)
+        run: |
+          mkdir extracted
+          cd extracted
+          ar -x ../target/release/libraptorq.a
+          $(brew --prefix llvm@15)/bin/llvm-objcopy --redefine-sym=_rust_eh_personality=_rust_canadian_personality $(find . -name 'raptorq-*')
+          libtool -static -o ../libraptorq-macos12.a *.o
+
       - name: Prepare output
         run: |
-          pushd include
+          cd include
           zip -r ../include.zip .
-          popd
-          mv target/release/libraptorq.a ./libraptorq-macos12.a
 
       - name: Upload build output
         uses: actions/upload-artifact@v4
@@ -90,10 +96,18 @@ jobs:
       - name: Build linux-x64
         run: cargo build --release
 
-      - name: Rename build output
+      - name: Hack to fix duplicate symbol (badness 10000)
         run: |
-          mv target/aarch64-unknown-linux-gnu/release/libraptorq.a ./libraptorq-rpi-arm64.a
-          mv target/release/libraptorq.a ./libraptorq-linux-x64.a
+          mkdir extracted1
+          cd extracted1
+          ar -x ../target/aarch64-unknown-linux-gnu/release/libraptorq.a
+          objcopy --redefine-sym=_rust_eh_personality=_rust_canadian_personality $(find . -name 'raptorq-*')
+          libtool -static -o ../libraptorq-rpi-arm64.a *.o
+          mkdir ../extracted2
+          cd ../extracted2
+          ar -x ../target/release/libraptorq.a
+          objcopy --redefine-sym=_rust_eh_personality=_rust_canadian_personality $(find . -name 'raptorq-*')
+          libtool -static -o ../libraptorq-linux-x64.a *.o
 
       - name: Upload build output
         uses: actions/upload-artifact@v4
