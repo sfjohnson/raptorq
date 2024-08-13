@@ -25,6 +25,7 @@ threadpool = "1.7"
 
 [profile.release]
 lto = "fat"
+panic = "abort"
 
 [[bench]]
 name = "codec_benchmark"
