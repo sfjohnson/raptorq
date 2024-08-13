@@ -23,6 +23,9 @@ primal = "0.3"
 rand = "0.8"
 threadpool = "1.7"
 
+[profile.release]
+lto = "fat"
+
 [[bench]]
 name = "codec_benchmark"
 harness = false
