@@ -98,7 +98,7 @@ jobs:
 
       - name: Hack to fix duplicate symbol (badness 10000)
         run: |
-          sudo apt install libtool
+          sudo apt install libtool-bin
           mkdir extracted1
           cd extracted1
           $TARGET_AR -x ../target/aarch64-unknown-linux-gnu/release/libraptorq.a
