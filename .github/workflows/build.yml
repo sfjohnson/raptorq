@@ -78,7 +78,7 @@ jobs:
 
       - name: Get RPi toolchain
         run: |
-          wget https://github.com/sfjohnson/rpi-toolchain/releases/download/v0.1.6/aarch64-rpi4-linux-gnu.tar.xz
+          wget https://github.com/sfjohnson/rpi-toolchain/releases/download/v0.1.8/aarch64-rpi4-linux-gnu.tar.xz
           tar xf aarch64-rpi4-linux-gnu.tar.xz -C ~
 
       - name: Configure Rust for RPi
