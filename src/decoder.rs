@@ -159,33 +159,14 @@ impl SourceBlockDecoder {
         }
     }
 
-    pub fn new_blank() -> SourceBlockDecoder {
-      SourceBlockDecoder {
-        source_block_id: 0,
-        symbol_size: 0,
-        num_sub_blocks: 0,
-        symbol_alignment: 0,
-        source_block_symbols: 0,
-        source_symbols: vec![],
-        repair_packets: vec![],
-        received_source_symbols: 0,
-        received_esi: Set::new(),
-        decoded: true,
-        sparse_threshold: 0
-      }
-    }
-
     pub fn reset(
       &mut self,
       source_block_id: u8,
       config: &ObjectTransmissionInformation,
       block_length: u64,
     ) {
-        let source_symbols = (block_length as f64 / config.symbol_size() as f64).ceil() as u32;
+        let source_symbols = int_div_ceil(block_length, config.symbol_size() as u64);
         self.received_esi.clear();
-        for i in source_symbols..extended_source_block_symbols(source_symbols) {
-          self.received_esi.insert(i);
-        }
         self.source_symbols.clear();
         for _ in 0..source_symbols {
           self.source_symbols.push(None);
